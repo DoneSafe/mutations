@@ -7,7 +7,7 @@ module Mutations
         keys.each do |key|
           define_method(key) do
             v = @inputs[key]
-            v.respond_to?(:call) ? v.call : v            
+            v.is_a?(Proc) ? v.call : v
           end
 
           define_method("#{key}_present?") do
