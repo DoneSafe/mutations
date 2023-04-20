@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'spec_helper'
 
 describe "Mutations::StringFilter" do
@@ -16,7 +18,7 @@ describe "Mutations::StringFilter" do
     assert_equal nil, errors
   end
 
-  it "allows fixnums" do
+  it "allows numbers" do
     sf = Mutations::StringFilter.new
     filtered, errors = sf.filter(1)
     assert_equal "1", filtered
@@ -93,7 +95,21 @@ describe "Mutations::StringFilter" do
     assert_equal :empty, errors
   end
 
-  it "considers strings that contain only unprintable characters to be invalid" do
+  it "considers stripped strings that are blank to be nil if empty_is_nil option is used" do
+    sf = Mutations::StringFilter.new(:strip => true, :empty_is_nil => true, :nils => true)
+    filtered, errors = sf.filter("   ")
+    assert_equal nil, filtered
+    assert_equal nil, errors
+  end
+
+  it "considers stripped strings that are blank to be invalid if empty_is_nil option is used" do
+    sf = Mutations::StringFilter.new(:strip => true, :empty_is_nil => true)
+    filtered, errors = sf.filter("   ")
+    assert_equal nil, filtered
+    assert_equal :nils, errors
+  end
+
+  it "considers strings that contain only control characters to be invalid" do
     sf = Mutations::StringFilter.new(:empty => false)
     filtered, errors = sf.filter("\u0000\u0000")
     assert_equal "", filtered
@@ -227,14 +243,14 @@ describe "Mutations::StringFilter" do
     assert_equal :string, errors
   end
 
-  it "removes unprintable characters" do
+  it "removes control characters" do
     sf = Mutations::StringFilter.new(:allow_control_characters => false)
     filtered, errors = sf.filter("Hello\u0000\u0000World!")
     assert_equal "Hello World!", filtered
     assert_equal nil, errors
   end
 
-  it "doesn't remove unprintable characters" do
+  it "doesn't remove control characters" do
     sf = Mutations::StringFilter.new(:allow_control_characters => true)
     filtered, errors = sf.filter("Hello\u0000\u0000World!")
     assert_equal "Hello\u0000\u0000World!", filtered
@@ -245,6 +261,13 @@ describe "Mutations::StringFilter" do
     sf = Mutations::StringFilter.new(:allow_control_characters => false)
     filtered, errors = sf.filter("Hello,\tWorld !\r\nNew Line")
     assert_equal "Hello,\tWorld !\r\nNew Line", filtered
+    assert_equal nil, errors
+  end
+
+  it "doesn't remove emoji" do
+    sf = Mutations::StringFilter.new(:allow_control_characters => false)
+    filtered, errors = sf.filter("😂🙂🙃🤣🤩🥰🥱")
+    assert_equal "😂🙂🙃🤣🤩🥰🥱", filtered
     assert_equal nil, errors
   end
 

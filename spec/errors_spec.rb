@@ -26,33 +26,33 @@ describe "Mutations - errors" do
     o = GivesErrors.run(:hash1 => 1, :arr1 => "bob")
 
     assert !o.success?
-    assert o.errors.is_a?(Mutations::ErrorHash)
-    assert o.errors[:str1].is_a?(Mutations::ErrorAtom)
-    assert o.errors[:str2].is_a?(Mutations::ErrorAtom)
+    assert_kind_of Mutations::ErrorHash, o.errors
+    assert_kind_of Mutations::ErrorAtom, o.errors[:str1]
+    assert_kind_of Mutations::ErrorAtom, o.errors[:str2]
     assert_nil o.errors[:int1]
-    assert o.errors[:hash1].is_a?(Mutations::ErrorAtom)
-    assert o.errors[:arr1].is_a?(Mutations::ErrorAtom)
+    assert_kind_of Mutations::ErrorAtom, o.errors[:hash1]
+    assert_kind_of Mutations::ErrorAtom, o.errors[:arr1]
   end
 
   it "returns an ErrorHash for nested hashes" do
     o = GivesErrors.run(:hash1 => {:bool1 => "poop"})
 
     assert !o.success?
-    assert o.errors.is_a?(Mutations::ErrorHash)
-    assert o.errors[:hash1].is_a?(Mutations::ErrorHash)
-    assert o.errors[:hash1][:bool1].is_a?(Mutations::ErrorAtom)
-    assert o.errors[:hash1][:bool2].is_a?(Mutations::ErrorAtom)
+    assert_kind_of Mutations::ErrorHash, o.errors
+    assert_kind_of Mutations::ErrorHash, o.errors[:hash1]
+    assert_kind_of Mutations::ErrorAtom, o.errors[:hash1][:bool1]
+    assert_kind_of Mutations::ErrorAtom, o.errors[:hash1][:bool2]
   end
 
   it "returns an ErrorArray for errors in arrays" do
     o = GivesErrors.run(:str1 => "a", :str2 => "opt1", :arr1 => ["bob", 1, "sally"])
 
     assert !o.success?
-    assert o.errors.is_a?(Mutations::ErrorHash)
-    assert o.errors[:arr1].is_a?(Mutations::ErrorArray)
-    assert o.errors[:arr1][0].is_a?(Mutations::ErrorAtom)
+    assert_kind_of Mutations::ErrorHash, o.errors
+    assert_kind_of Mutations::ErrorArray, o.errors[:arr1]
+    assert_kind_of Mutations::ErrorAtom, o.errors[:arr1][0]
     assert_nil o.errors[:arr1][1]
-    assert o.errors[:arr1][2].is_a?(Mutations::ErrorAtom)
+    assert_kind_of Mutations::ErrorAtom, o.errors[:arr1][2]
   end
 
   describe "error messages" do
@@ -97,7 +97,7 @@ describe "Mutations - errors" do
       expected = ["Str1 can't be blank", "Str2 isn't an option", "Int1 isn't an integer", "Bool1 isn't a boolean", "Bool2 is required", "Arr1[0] isn't an integer", "Arr1[2] isn't an integer"]
 
       assert_equal expected.size, @outcome.errors.message_list.size
-      expected.each { |e| assert @outcome.errors.message_list.include?(e) }
+      expected.each { |e| assert_includes @outcome.errors.message_list, e }
     end
   end
 
